@@ -25,7 +25,8 @@ Every item below is a hard requirement unless it says otherwise.
 5. The release attaches at least one package named
    `<id>-<version>-<os>-<arch>[-portable].<ext>` ([Package names](#package-names)), and
    `<version>` equals the tag without its `v`.
-6. Archives have the layout the launcher installs from ([Archive layouts](#archive-layouts)).
+6. Archives have the layout the launcher installs from ([Archive layouts](#archive-layouts)). A
+   portable zip's `<id>.exe` carries the release's version in its Windows version resource.
 7. The release attaches `SHA256SUMS.txt` listing every package, `craft-app.json` and the icon, and
    nothing that isn't attached ([Checksums](#checksums)).
 8. If the release ships an `.msi`, `craft-app.json` names `msi_publisher`, and it equals the
@@ -155,6 +156,12 @@ the contract name.
   `tar -a -c -f x.zip ...`, 7-Zip, or Python's `zipfile` instead.
 - **Portable zip** (`-portable.zip`): `<id>.exe` (any letter case) is at the root of the zip, or at
   the root of a single top-level folder that holds everything.
+- **The portable `<id>.exe` carries its version.** It must have a Windows version resource
+  (VERSIONINFO) whose `ProductVersion` is the release's version (`1.2.0` for tag `v1.2.0`). The
+  launcher reads it after unpacking and rolls the install back when it's missing or different.
+  Many Rust builds have none: add a `build.rs` using the `winresource` crate (it takes the version
+  from `Cargo.toml`). The checker can't see inside the executable, so check it yourself in
+  PowerShell: `(Get-Item <id>.exe).VersionInfo.ProductVersion`. MSIs have no such rule.
 - **Tarball** (`.tar.gz`): the binary is at `bin/<id>` or `<id>`, optionally inside a single
   top-level folder. It must be a regular file, not a link.
 - **No escaping paths.** Absolute paths, `..`, and links pointing outside the archive are refused.
