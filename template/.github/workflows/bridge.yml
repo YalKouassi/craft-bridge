@@ -1,9 +1,9 @@
-# Mirrors the upstream project's newest release every 30 minutes (and on demand).
+# Mirrors the upstream project's newest release every 3 hours (and on demand).
 name: bridge
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '17 */3 * * *'
   workflow_dispatch:
     inputs:
       tag:

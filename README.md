@@ -100,7 +100,7 @@ warning, and the bridge keeps mirroring.)
    - `bridge.toml` (start from [`template/bridge.toml`](template/bridge.toml));
    - `.github/workflows/bridge.yml` (copy
      [`template/.github/workflows/bridge.yml`](template/.github/workflows/bridge.yml)); it runs
-     every 30 minutes and on demand;
+     every 3 hours and on demand;
    - a README saying it's an unofficial mirror, who maintains it, and linking upstream;
    - licence files for the bridge's own files.
 3. Dry-run it locally and check the result with the launcher's own checker:
