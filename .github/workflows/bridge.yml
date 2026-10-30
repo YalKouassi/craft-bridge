@@ -1,0 +1,71 @@
+# Reusable workflow: mirror the caller's upstream release with bridge.py.
+#
+# The caller is a bridge repo with a bridge.toml at its root. It needs
+#   permissions:
+#     contents: write
+# so the job can create releases. See template/.github/workflows/bridge.yml.
+name: craft-bridge
+
+on:
+  workflow_call:
+    inputs:
+      bridge-ref:
+        description: craft-bridge ref (branch, tag or commit) whose bridge.py runs
+        type: string
+        default: main
+      config:
+        description: path of the bridge config in the caller repo
+        type: string
+        default: bridge.toml
+      tag:
+        description: mirror this upstream tag instead of the latest release
+        type: string
+        default: ''
+      force:
+        description: rebuild and replace the release even if the bridge already has it
+        type: boolean
+        default: false
+      backfill:
+        description: also mirror up to N older upstream releases the bridge lacks
+        type: number
+        default: 0
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out the bridge repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out craft-bridge
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: YalKouassi/craft-bridge
+          ref: ${{ inputs.bridge-ref }}
+          path: .craft-bridge
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+
+      - name: Mirror
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+          CONFIG: ${{ inputs.config }}
+          TAG: ${{ inputs.tag }}
+          FORCE: ${{ inputs.force }}
+          BACKFILL: ${{ inputs.backfill }}
+        run: |
+          args=(--config "$CONFIG" --out "$RUNNER_TEMP/dist")
+          if [ -n "$TAG" ]; then args+=(--tag "$TAG"); fi
+          if [ "$FORCE" = "true" ]; then args+=(--force); fi
+          if [ "${BACKFILL:-0}" -gt 0 ] 2>/dev/null; then args+=(--backfill "$BACKFILL"); fi
+          python -I .craft-bridge/bridge.py "${args[@]}"

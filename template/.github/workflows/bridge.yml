@@ -1,0 +1,30 @@
+# Mirrors the upstream project's newest release every 30 minutes (and on demand).
+name: bridge
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Upstream tag to mirror (empty = latest release)
+        type: string
+        default: ''
+      force:
+        description: Rebuild and replace an existing release
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bridge-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  bridge:
+    uses: YalKouassi/craft-bridge/.github/workflows/bridge.yml@main
+    with:
+      tag: ${{ inputs.tag || '' }}
+      force: ${{ inputs.force == true }}

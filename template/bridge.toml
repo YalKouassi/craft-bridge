@@ -1,0 +1,47 @@
+# Unofficial bridge: mirrors opengeos/RustGIS releases for Craft Unofficial Launcher.
+# Run by https://github.com/YalKouassi/craft-bridge (its README explains every key).
+
+[bridge]
+upstream = "opengeos/RustGIS"
+repo = "YalKouassi/rustgis-for-unofficial-launcher"
+upstream_sums = ["SHA256SUMS"]
+# Not mirrored: Python wheels, the MSIX and the setup.exe (the launcher installs the MSI and the
+# portable zip), AppImage delta files, the source tarball and the CLI-only macOS builds.
+skip = ['\.whl$', '\.msix$', '-setup\.exe$', '\.zsync$', '^rustgis-[0-9][0-9.]*\.tar\.gz$', '^rustgis-cli-']
+
+[descriptor]
+id = "rustgis"
+name = "RustGIS"
+tagline = "A fast, free and open-source GIS in pure Rust"
+publisher = "Open Geospatial Solutions"
+bundle_id = "org.rustgis.RustGIS"                # CFBundleIdentifier in upstream's Info.plist
+msi_publisher = "Open Geospatial Solutions"      # Manufacturer in upstream's MSI (rustgis.wxs)
+website = "https://rustgis.app"
+color = "#d36736"
+
+# Upstream keeps no PNG icon in its repo (it draws one at build time), so take the 512 px icon
+# its Linux tarball ships.
+[icon]
+archive = 'RustGIS-{version}-linux-x86_64\.tar\.gz'
+member = 'RustGIS-{version}-linux-x86_64/rustgis\.png'
+
+[[rename]]
+match = 'RustGIS-(?P<version>[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)-windows-x86_64-portable\.zip'
+to = '{id}-{version}-windows-x64-portable.zip'
+
+[[rename]]
+match = 'RustGIS-(?P<version>[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)-windows-x86_64\.msi'
+to = '{id}-{version}-windows-x64.msi'
+
+[[rename]]
+match = 'RustGIS-(?P<version>[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)-(?P<target>linux-(?:x86_64|aarch64)|macos-(?:x86_64|aarch64))(?P<ext>\.tar\.gz|\.AppImage|\.dmg)'
+to = '{id}-{version}-{target}{ext}'
+
+[[rename]]
+match = 'rustgis-(?P<version>[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)-1\.(?P<arch>x86_64|aarch64)\.rpm'
+to = '{id}-{version}-linux-{arch}.rpm'
+
+[[rename]]
+match = 'rustgis_(?P<version>[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)_(?P<arch>amd64|arm64)\.deb'
+to = '{id}-{version}-linux-{arch}.deb'
+map = { arch = { amd64 = "x86_64", arm64 = "aarch64" } }
