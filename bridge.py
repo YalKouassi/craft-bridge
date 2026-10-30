@@ -223,7 +223,7 @@ def valid_file_name(name: str) -> bool:
 DESCRIPTOR_FIELDS = {
     "schema": "u32", "id": "str", "name": "str", "tagline": "str", "repo": "str", "publisher": "str",
     "upstream": "opt", "bundle_id": "str", "msi_publisher": "opt", "apple_team": "opt", "website": "opt",
-    "color": "str", "icon": "opt", "former_ids": "list", "former_names": "list", "former_bundles": "list",
+    "web_demo": "opt", "color": "str", "icon": "opt", "former_ids": "list", "former_names": "list", "former_bundles": "list",
 }
 DESCRIPTOR_ORDER = list(DESCRIPTOR_FIELDS)
 
@@ -333,6 +333,9 @@ def check_descriptor(d: dict, repo: str) -> list[str]:
     w = d.get("website")
     if w is not None:
         bad(valid_https(w), f"website {w!r} must be an https:// link")
+    w = d.get("web_demo")
+    if w is not None:
+        bad(valid_https(w), f"web_demo {w!r} must be an https:// link")
     bad(parse_color(d["color"]) is not None, f"color {d['color']!r} must be #rrggbb")
     i = d.get("icon")
     if i is not None:
@@ -820,7 +823,7 @@ class ConfigError(Exception):
     """bridge.toml is wrong (exit 2)."""
 
 
-DESCRIPTOR_CONFIG_KEYS = {"id", "name", "tagline", "publisher", "bundle_id", "msi_publisher", "apple_team", "website", "color", "former_ids", "former_names", "former_bundles"}
+DESCRIPTOR_CONFIG_KEYS = {"id", "name", "tagline", "publisher", "bundle_id", "msi_publisher", "apple_team", "website", "web_demo", "color", "former_ids", "former_names", "former_bundles"}
 
 
 @dataclass

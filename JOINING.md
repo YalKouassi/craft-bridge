@@ -38,7 +38,7 @@ Optional:
 
 - `apple_team`: without it the launcher won't install your `.dmg` (it only opens a copy that's
   already installed).
-- `website`, `former_ids`, `former_names`, `former_bundles`.
+- `website`, `web_demo`, `former_ids`, `former_names`, `former_bundles`.
 
 ## The descriptor
 
@@ -55,6 +55,7 @@ Optional:
   "msi_publisher": "Example Org",
   "apple_team": null,
   "website": "https://example.org/examplecraft",
+  "web_demo": "https://example.org/examplecraft/try",
   "color": "#7a45b8",
   "icon": "examplecraft-128.png"
 }
@@ -83,6 +84,7 @@ Optional:
 | `msi_publisher` | if you ship an `.msi` | The Publisher your MSI registers in Windows' installed-apps list, exactly. Plain text, 1–100 chars. |
 | `apple_team` | no | Your Apple Developer ID Team ID (10 chars of `A-Z0-9`) that signs the `.app` in your `.dmg`. |
 | `website` | no | An `https://` link, at most 200 bytes. |
+| `web_demo` | no | A page where the app can be tried in a web browser without installing it; the launcher shows it as a "Web demo" link. Same rules as `website`. |
 | `color` | yes | Brand colour, `#rrggbb`. |
 | `icon` | no | File name of a `.png` attached to every release, e.g. `examplecraft-128.png`. |
 | `former_ids` | no | Up to 8 older ids; packages named with one are still accepted. |

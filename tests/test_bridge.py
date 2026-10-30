@@ -27,6 +27,7 @@ EXAMPLE = {
     "msi_publisher": "Example Org",
     "apple_team": None,
     "website": "https://example.org/examplecraft",
+    "web_demo": "https://example.org/examplecraft/try",
     "color": "#7a45b8",
     "icon": "examplecraft-128.png",
 }
@@ -103,6 +104,8 @@ class Descriptor(unittest.TestCase):
             ("website", "https://user@example.org/"),
             ("website", "https:///path"),
             ("website", "javascript:alert(1)"),
+            ("web_demo", "http://example.org/try"),
+            ("web_demo", "javascript:alert(1)"),
             ("website", "https://example.org/" + "a" * 190),
             ("color", "red"),
             ("color", "#12345g"),
@@ -141,7 +144,7 @@ class Descriptor(unittest.TestCase):
         self.assertEqual(len(p), 2, p)
 
     def test_missing_optional_fields_are_fine(self):
-        d = {k: v for k, v in EXAMPLE.items() if k not in ("upstream", "msi_publisher", "apple_team", "website", "icon")}
+        d = {k: v for k, v in EXAMPLE.items() if k not in ("upstream", "msi_publisher", "apple_team", "website", "web_demo", "icon")}
         self.assertEqual(b.parse_descriptor(json.dumps(d).encode(), REPO)[1], [])
         d.pop("color")
         self.assertIsNone(b.parse_descriptor(json.dumps(d).encode(), REPO)[0])
