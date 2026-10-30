@@ -207,6 +207,7 @@ Tests: `python -m unittest discover -s tests`.
 ```yaml
 permissions:
   contents: write
+  issues: write   # the "Sync status" issue
 jobs:
   bridge:
     uses: YalKouassi/craft-bridge/.github/workflows/bridge.yml@main
@@ -219,6 +220,11 @@ jobs:
 
 It checks out the bridge repo and this repo (at `bridge-ref`), sets up Python 3.12 and runs
 `bridge.py` with the job's `GITHUB_TOKEN`.
+
+After every run, even a failed one, it updates the bridge repo's **Sync status** issue (creating it
+if it's missing) with when upstream was last checked, the result, the latest mirrored release and
+a link to the run log. Pin and lock that issue so visitors see it first and comments go to new
+issues. The caller must grant `issues: write`, or the run fails before it starts.
 
 ## Licence
 

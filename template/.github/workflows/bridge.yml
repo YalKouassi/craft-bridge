@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  issues: write   # the "Sync status" issue
 
 concurrency:
   group: bridge-${{ github.repository }}

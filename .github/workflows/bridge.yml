@@ -55,7 +55,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Note the latest mirrored release
+        id: before
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
+
       - name: Mirror
+        id: mirror
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GH_TOKEN: ${{ github.token }}
@@ -69,3 +76,43 @@ jobs:
           if [ "$FORCE" = "true" ]; then args+=(--force); fi
           if [ "${BACKFILL:-0}" -gt 0 ] 2>/dev/null; then args+=(--backfill "$BACKFILL"); fi
           python -I .craft-bridge/bridge.py "${args[@]}"
+
+      # Edits the repo's "Sync status" issue, creating it if it's missing, so visitors can see
+      # when upstream was last checked without opening the Actions tab. Never fails the run.
+      - name: Update the Sync status issue
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTCOME: ${{ steps.mirror.outcome }}
+          BEFORE: ${{ steps.before.outputs.tag }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          read -r tag url < <(gh release view --repo "$GITHUB_REPOSITORY" --json tagName,url --jq '"\(.tagName) \(.url)"' 2>/dev/null) || true
+          if [ "$OUTCOME" != success ]; then
+            result="Failed: see the run log"
+          elif [ -n "$tag" ] && [ "$tag" != "$BEFORE" ]; then
+            result="Mirrored a new release"
+          else
+            result="Up to date"
+          fi
+          if [ -n "$tag" ]; then latest="[$tag]($url)"; else latest="none yet"; fi
+          body="$RUNNER_TEMP/status.md"
+          cat > "$body" <<MD
+          Every bridge run updates this issue. Please open a new issue rather than commenting here.
+
+          | | |
+          |---|---|
+          | Last checked upstream | $(date -u '+%Y-%m-%d %H:%M UTC') |
+          | Result | $result |
+          | Latest mirrored release | $latest |
+          | Run | [log]($RUN_URL) |
+
+          The schedule is in [\`.github/workflows/bridge.yml\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/HEAD/.github/workflows/bridge.yml). GitHub sometimes starts scheduled runs late.
+          MD
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state all --search 'Sync status in:title' --json number,title --jq 'map(select(.title == "Sync status"))[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Sync status" --body-file "$body"
+          fi
