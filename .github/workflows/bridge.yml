@@ -3,6 +3,7 @@
 # The caller is a bridge repo with a bridge.toml at its root. It needs
 #   permissions:
 #     contents: write
+#     issues: write
 # so the job can create releases. See template/.github/workflows/bridge.yml.
 name: craft-bridge
 
@@ -32,6 +33,7 @@ on:
 
 permissions:
   contents: write
+  issues: write   # the "Sync status" issue
 
 jobs:
   mirror:
