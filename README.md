@@ -16,7 +16,10 @@ a template.
 ## How to be included
 
 **App authors don't need a bridge.** A bridge is a stopgap for apps whose authors haven't joined
-yet. The way in is to make your own releases follow the contract. Once they do, anyone can add
+yet, the bridges that currently exist are either for my own testing as no apps have followed the plumbing/procedure yet
+Or apps that I'd like to add in myself that haven't followed the plumbing/proecure.
+
+The way in is to make your own releases follow the contract. Once they do, anyone can add
 your app by pasting its repo URL into the launcher's **Add app** box.
 
 The full instructions are in **[JOINING.md](JOINING.md)**. It's self-contained and written so you
