@@ -13,6 +13,33 @@ lists the bridge repo like any other app.
 This repo holds the tool every bridge runs: `bridge.py`, a reusable GitHub Actions workflow, and
 a template.
 
+## How to be included
+
+**App authors don't need a bridge.** A bridge is a stopgap for apps whose authors haven't joined
+yet. The way in is to make your own releases follow the contract. Once they do, anyone can add
+your app by pasting its repo URL into the launcher's **Add app** box.
+
+The full instructions are in **[JOINING.md](JOINING.md)**. It's self-contained and written so you
+can hand it to your coding agent as-is ("make my releases follow JOINING.md"). In short, every
+GitHub release must:
+
+- [ ] attach a valid `craft-app.json` (committed at the repo root): id, name, tagline, repo,
+      publisher, bundle id, colour
+- [ ] be a published release, not a draft or prerelease, tagged with the version (`v1.2.0`)
+- [ ] attach packages named `<id>-<version>-<os>-<arch>[-portable].<ext>`, with the version
+      equal to the tag
+- [ ] use archive layouts the launcher installs from (`<id>.exe` at the root of a
+      `-portable.zip`, `bin/<id>` or `<id>` in a `.tar.gz`, `/` as the separator)
+- [ ] attach `SHA256SUMS.txt`, listing every package, the descriptor and the icon
+- [ ] name `msi_publisher` if it ships an `.msi`, and match what the MSI really registers
+- [ ] attach the icon if one is named (a PNG of at most 256 KB and 512 px)
+- [ ] not use ArtCraft's names, ids or publishers
+- [ ] pass the checker: `python -I bridge.py --check dist --repo <owner>/<name> --tag <tag>`
+
+To be in the launcher's default list as well,
+[open an "Add app" issue](https://github.com/YalKouassi/craft-bridge/issues/new?template=add-app.yml)
+with your repo URL and the checker's output.
+
 Bridges are unofficial. They aren't made, reviewed or endorsed by the upstream projects they
 mirror, or by ArtCraft.
 
@@ -140,7 +167,8 @@ Python 3.11 or newer, standard library only.
 
 ```text
 python -I bridge.py [--config bridge.toml] [--out dist] [--dry-run] [--force] [--tag TAG] [--backfill N]
-python -I bridge.py --check DIR --tag TAG
+python -I bridge.py --check DIR --tag TAG [--repo OWNER/NAME]
+python -I bridge.py --sums DIR
 ```
 
 - With no flags, it mirrors upstream's latest release (not drafts or prereleases), and exits 0
@@ -150,7 +178,9 @@ python -I bridge.py --check DIR --tag TAG
 - `--tag` mirrors a specific upstream tag.
 - `--backfill N` also mirrors up to N older upstream releases the bridge lacks; only the newest
   is marked as the bridge's latest release.
-- `--check` validates a folder as a release of this bridge.
+- `--check` validates a folder as a release of this bridge; with `--repo OWNER/NAME` it validates
+  it as a release of any repo and needs no `bridge.toml` (this is how app authors check theirs).
+- `--sums DIR` writes `DIR/SHA256SUMS.txt` for every file in the folder.
 
 Exit codes: `0` done or nothing to do, `1` the release couldn't be built or breaks the contract,
 `2` a config, argument or network problem. `GITHUB_TOKEN` (or `GH_TOKEN`) is sent to

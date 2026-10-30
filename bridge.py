@@ -15,6 +15,8 @@ never extracted to disk and never run).
 Usage:
     python -I bridge.py [--config bridge.toml] [--dry-run] [--force] [--tag TAG] [--backfill N]
     python -I bridge.py --check DIR --tag TAG      # validate a folder as a release of this bridge
+    python -I bridge.py --check DIR --tag TAG --repo OWNER/NAME   # ...of any repo, no bridge.toml
+    python -I bridge.py --sums DIR                 # write DIR/SHA256SUMS.txt
 
 Exit codes: 0 done (or nothing to do), 1 the release couldn't be built or breaks the contract,
 2 bad arguments/config or a network failure.
@@ -1321,12 +1323,25 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--tag", help="mirror this upstream tag instead of the latest release")
     ap.add_argument("--backfill", type=int, default=0, metavar="N", help="also mirror up to N older releases the bridge lacks")
     ap.add_argument("--check", type=Path, metavar="DIR", help="only validate DIR as release --tag of this bridge")
+    ap.add_argument("--repo", metavar="OWNER/NAME", help="with --check: validate DIR as a release of this repo (no bridge.toml needed)")
+    ap.add_argument("--sums", type=Path, metavar="DIR", help=f"only write DIR/{SUMS_FILE} for every file in DIR")
     args = ap.parse_args(argv)
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or None
     try:
+        if args.sums:
+            if not args.sums.is_dir():
+                raise ConfigError(f"{args.sums} isn't a folder")
+            log(write_sums(args.sums).rstrip())
+            return 0
+        if args.repo:
+            if not (args.check and args.tag):
+                raise ConfigError("--repo needs --check and --tag")
+            r = check_dir(args.check, args.repo, args.tag)
+            print_report(f"{args.check} as {args.repo} {args.tag}", r)
+            return 0 if r.ok else 1
         cfg = load_config(args.config)
         if gr := os.environ.get("GITHUB_REPOSITORY"):
             if ascii_lower(gr) != ascii_lower(cfg.repo):

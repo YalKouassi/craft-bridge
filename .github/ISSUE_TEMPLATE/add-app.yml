@@ -1,0 +1,29 @@
+name: Add my app to the launcher's list
+description: Ask for an app whose releases follow JOINING.md to be listed in Craft Unofficial Launcher's default index.
+title: "Add app: "
+labels: ["add-app"]
+body:
+  - type: input
+    id: repo
+    attributes:
+      label: Repository URL
+      placeholder: https://github.com/owner/name
+    validations:
+      required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: Checker output
+      description: The output of `python -I bridge.py --check dist --repo owner/name --tag vX.Y.Z` for your latest release.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirm
+      options:
+        - label: I maintain this app, or its maintainers agreed to it being listed.
+          required: true
+        - label: Its latest release follows every item of the checklist in JOINING.md.
+          required: true

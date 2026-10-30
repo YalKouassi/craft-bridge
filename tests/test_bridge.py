@@ -404,6 +404,19 @@ class Sums(unittest.TestCase):
             r = b.check_dir(dist, REPO, "v1.0.0")
             self.assertTrue(any("no regular file" in p for p in r.problems), r.problems)
 
+    def test_app_authors_can_check_without_a_bridge_toml(self):
+        with tempfile.TemporaryDirectory() as t:
+            dist = Path(t)
+            desc = dict(EXAMPLE, id="app", name="App", icon=None, msi_publisher=None, website=None)
+            (dist / "craft-app.json").write_text(b.descriptor_json(desc))
+            make_tar(dist / "app-1.0.0-linux-x86_64.tar.gz", ["app"])
+            missing = str(dist / "no-bridge.toml")
+            self.assertEqual(b.main(["--sums", t, "--config", missing]), 0)
+            self.assertTrue((dist / b.SUMS_FILE).is_file())
+            self.assertEqual(b.main(["--check", t, "--tag", "v1.0.0", "--repo", REPO, "--config", missing]), 0)
+            self.assertEqual(b.main(["--check", t, "--tag", "v1.0.0", "--repo", "other/repo", "--config", missing]), 1)
+            self.assertEqual(b.main(["--repo", REPO]), 2)
+
 
 class Planning(unittest.TestCase):
     CFG = """
